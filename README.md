@@ -166,7 +166,4 @@ Commite suas mudanças (git commit -m 'Adicionei uma nova funcionalidade').
 Push para o seu fork (git push origin minha-feature).
 Abra um Pull Request.
 
-📞 Contato
-💻 Autor: Walter Rodrigues Jr.
-📧 Email: walter@example.com
-📌 GitHub: github.com/walterrodriguesjr
+
