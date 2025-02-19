@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PerfilController;
+use App\Http\Controllers\SessaoController;
 
 /**
  * Redireciona '/' com base na autenticação do usuário.
@@ -28,6 +30,11 @@ Route::get('/login', function () {
     return view('login.login');
 })->name('login');
 
+Route::get('/logout', function () {
+    return redirect()->route('login')->with('info', 'Por favor, faça login para acessar esta página.');
+})->name('logout.get');
+
+
 Route::get('/forgot-password', function () {
     return view('password.forgot-password');
 })->name('password.request');
@@ -41,34 +48,67 @@ Route::get('/reset-password/{token}', [PasswordController::class, 'showResetForm
 Route::post('/reset-password', [PasswordController::class, 'resetPassword'])
     ->name('password.update');
 
+
+
 /**
  * Rotas Protegidas (Requer autenticação)
  */
-Route::get('/main', function () {
-    return view('main.main');
-})->middleware(['auth', 'two-factor.verified'])->name('main');
+Route::middleware(['auth', 'two-factor.verified'])->group(function () {
+    // Rota principal
+    Route::get('/main', function () {
+        return view('layouts.main');
+    })->name('main');
+
+    // Rota de logout
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    //alterar a senha estando logado
+    Route::post('/alterar-senha', [PasswordController::class, 'alterarSenha'])
+        ->middleware('auth') // Apenas para usuários logados
+        ->name('password.change');
+
+    //alterar autenticacao dois fatores estando logado
+    Route::post('/atualizar-2fa', [TwoFactorController::class, 'atualizarAutenticacaoDoisFatores'])
+        ->name('two-factor.update')
+        ->middleware('auth'); // Garantir que só usuários logados alterem a configuração
+
+    Route::get('/sessoes-ativas', [SessaoController::class, 'listarSessoesAtivas'])
+        ->name('sessoes.ativas');
+
+    Route::post('/sessoes-ativas/logout/{id}', [SessaoController::class, 'encerrarSessao'])
+        ->name('sessoes.encerrar');
+
+    Route::post('/sessoes-ativas/logout-all', [SessaoController::class, 'encerrarTodasSessoes'])
+        ->name('sessoes.encerrar-todas');
+
+    Route::get('/perfil/exportar-dados', [PerfilController::class, 'exportarDados'])
+        ->name('perfil.exportar-dados');
+
+    Route::get('/perfil/historico', [PerfilController::class, 'historicoAlteracoes']);
+
+    Route::post('/validar-senha-exclusao', [PerfilController::class, 'validarSenhaExclusao']);
+    Route::post('/excluir-conta', [PerfilController::class, 'excluirConta']); // Mudando para refletir a função correta
 
 
-Route::post('/logout', [AuthController::class, 'logout'])
-    ->middleware('auth') // Use 'auth' em vez de 'auth:sanctum'
-    ->name('logout');
+    // Rota de perfil
+    Route::resource('perfil', PerfilController::class);
+});
 
 
 /**
  * Rotas de autenticação
  */
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1')->name('login');
- Route::post('/register', [AuthController::class, 'register'])->name('register');
+Route::post('/register', [AuthController::class, 'register'])->name('register');
 
- Route::get('/two-factor', [TwoFactorController::class, 'showTwoFactorForm'])
- ->middleware('auth')
- ->name('two-factor.show');
+Route::get('/two-factor', [TwoFactorController::class, 'showTwoFactorForm'])
+    ->middleware('auth')
+    ->name('two-factor.show');
 
 Route::post('/two-factor', [TwoFactorController::class, 'verifyTwoFactor'])
- ->middleware('auth')
- ->name('two-factor.verify');
+    ->middleware('auth')
+    ->name('two-factor.verify');
 
 Route::post('/two-factor/resend', [TwoFactorController::class, 'resendTwoFactorCode'])
- ->middleware('auth')
- ->name('two-factor.resend');
-
+    ->middleware('auth')
+    ->name('two-factor.resend');
