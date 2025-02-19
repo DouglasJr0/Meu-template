@@ -29,7 +29,7 @@ Node.js 18+ e NPM 9+ (para build frontend)
 1️⃣ Clone o Repositório
 git clone https://github.com/DouglasJr0/Meu-template
 
-cd template-laravel-11-com-login-recuperacao-de-senha-two-factor-completo
+cd Meu-template
 
 2️⃣ Configuração Inicial
 Copie o arquivo .env.example para .env:
