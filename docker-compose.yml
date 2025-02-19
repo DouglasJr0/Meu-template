@@ -1,8 +1,10 @@
+version: '3.8'
+
 services:
   app:
     build:
       context: .
-      dockerfile: docker/php/Dockerfile
+      dockerfile: Dockerfile
     container_name: laravel_app
     restart: unless-stopped
     working_dir: /var/www
@@ -42,6 +44,24 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - laravel_network
+
+  vite:
+    build:
+      context: .
+      dockerfile: Dockerfile.vite
+    container_name: vite_server
+    working_dir: /var/www
+    volumes:
+      - ./resources:/var/www/resources
+      - ./vite.config.js:/var/www/vite.config.js
+      - ./package.json:/var/www/package.json
+      - ./package-lock.json:/var/www/package-lock.json
+    ports:
+      - "5173:5173"
+    networks:
+      - laravel_network
+    depends_on:
+      - app
 
 networks:
   laravel_network:

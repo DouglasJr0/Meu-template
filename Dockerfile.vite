@@ -1,0 +1,26 @@
+FROM node:18-alpine AS vite-frontend
+
+# Define o diretório de trabalho
+WORKDIR /var/www
+
+# Copia arquivos necessários para instalar dependências
+COPY package.json package-lock.json ./
+
+# Instala as dependências do Node.js
+RUN npm install
+
+# Copia os outros arquivos necessários
+COPY resources/ ./resources/
+COPY vite.config.js ./
+
+# Verifica se o Vite está instalado globalmente
+RUN npm list -g vite || npm install -g vite
+
+# Gera os assets para produção (opcional)
+RUN npm run build
+
+# Expõe a porta do Vite para o desenvolvimento
+EXPOSE 5173
+
+# Define o comando padrão para o desenvolvimento
+CMD ["npm", "run", "dev"]
